@@ -1,2 +1,3 @@
-database.txt
+data_user.txt
 node_modules
+.env
