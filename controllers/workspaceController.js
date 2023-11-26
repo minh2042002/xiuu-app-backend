@@ -8,8 +8,15 @@ import mongoose from "mongoose";
 
 // Create new workspace
 export const createWorkspace = async (req, res) => {
-    const { name } = req.body;
+    const { name , document} = req.body;
+
+    const sessionWorkspace = await mongoose.startSession();
+    const sessionDocument = await mongoose.startSession();
+    sessionWorkspace.startTransaction();
+    sessionDocument.startTransaction();
+
     let existWorkspace;
+    let existDocument;
     try {
         existWorkspace = await Workspace.findOne({ name });
         if (existWorkspace) {
@@ -20,9 +27,34 @@ export const createWorkspace = async (req, res) => {
 
         const workspace = new Workspace({ name });
 
-        await workspace.save();
-        return res.status(201).json({ workspace });
+        const saveWorkspace = await workspace.save({ sessionWorkspace });
+        sessionWorkspace.commitTransaction();
+        sessionWorkspace.endSession();
+
+        existDocument = await Document.findOne({ user_requirements: document.user_requirements });
+        
+        if (existDocument) {
+            return res.status(400).json({ message: "Document already exists!"});
+        }
+
+        const newDocument = new Document({
+            workspace: saveWorkspace._id,
+            user_requirements: document.user_requirements,
+            report: document.report,
+            slide: document.slide, 
+        });
+
+        const saveDocument = await newDocument.save({ sessionDocument });
+        sessionDocument.commitTransaction();
+        sessionDocument.endSession();
+
+        return res.status(201).json({ message: "Create workspace success" });
     } catch (error) {
+        sessionWorkspace.abortTransaction();
+        sessionWorkspace.endSession();
+        sessionDocument.abortTransaction();
+        sessionDocument.endSession();
+
         console.log(err);
         return res.status(500).json({ message: "Internal server error!" });
     }
@@ -114,17 +146,17 @@ export const getAllUserInWorkspace = async (req, res) => {
 // Workspaces for user
 export const getWorkspaceByUid = async (req, res) => {
     const { uid } = req.body;
-    let workspaces;
+    let result;
     try {
-        workspaces = await WorkspaceMember.findOne({ user: uid }).populate(
-            "workspace"
+        result = await WorkspaceMember.find({ user: uid }, '-user -__v -_id').populate(
+            "workspace", '-__v'
         );
 
-        if (!workspaces) {
+        if (!result) {
             return res.status(404).json({ message: "Workspace is not found!" });
         }
 
-        return res.status(200).json({ workspaces });
+        return res.status(200).json(result);
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error!" });
@@ -210,7 +242,7 @@ export const getTaskByWorkspaceId = async (req, res) => {
             return res.status(404).json({ message: "Tasks not found!" });
         }
 
-        return res.status(200).json({ tasks });
+        return res.status(200).json(tasks);
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error!" });
