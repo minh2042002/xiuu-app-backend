@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 
 // Create new workspace
 export const createWorkspace = async (req, res) => {
-    const { name , document} = req.body;
+    const { name, document } = req.body;
 
     const sessionWorkspace = await mongoose.startSession();
     const sessionDocument = await mongoose.startSession();
@@ -18,7 +18,7 @@ export const createWorkspace = async (req, res) => {
     let existWorkspace;
     let existDocument;
     try {
-        existWorkspace = await Workspace.findOne({ name });
+        existWorkspace = await Workspace.findOne({ name }); // hàm query mongodb => mongoose
         if (existWorkspace) {
             return res
                 .status(400)
@@ -31,17 +31,21 @@ export const createWorkspace = async (req, res) => {
         sessionWorkspace.commitTransaction();
         sessionWorkspace.endSession();
 
-        existDocument = await Document.findOne({ user_requirements: document.user_requirements });
-        
+        existDocument = await Document.findOne({
+            user_requirements: document.user_requirements,
+        });
+
         if (existDocument) {
-            return res.status(400).json({ message: "Document already exists!"});
+            return res
+                .status(400)
+                .json({ message: "Document already exists!" });
         }
 
         const newDocument = new Document({
             workspace: saveWorkspace._id,
             user_requirements: document.user_requirements,
             report: document.report,
-            slide: document.slide, 
+            slide: document.slide,
         });
 
         const saveDocument = await newDocument.save({ sessionDocument });
@@ -68,9 +72,9 @@ export const addUserToWorkspace = async (req, res) => {
 
     let exists;
     try {
-        exists = await WorkspaceMember.findOne({ 
-            workspace: workspace_id, 
-            user: user_id
+        exists = await WorkspaceMember.findOne({
+            workspace: workspace_id,
+            user: user_id,
         });
         if (exists) {
             return res
@@ -85,7 +89,9 @@ export const addUserToWorkspace = async (req, res) => {
         });
 
         await wp_member.save();
-        return res.status(201).json({ message: "Add user into workspace success" });
+        return res
+            .status(201)
+            .json({ message: "Add user into workspace success" });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error!" });
@@ -106,19 +112,19 @@ export const getAllUserInWorkspace = async (req, res) => {
             },
             {
                 $lookup: {
-                    from: 'users',
-                    localField: 'user',
-                    foreignField: '_id',
-                    as: 'users',
-                }
+                    from: "users",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "users",
+                },
             },
             {
-                $unwind: '$users',
+                $unwind: "$users",
             },
             {
                 $group: {
-                    _id: '$workspace',
-                    users: { $push: '$users'},
+                    _id: "$workspace",
+                    users: { $push: "$users" },
                 },
             },
             {
@@ -126,20 +132,20 @@ export const getAllUserInWorkspace = async (req, res) => {
                     _id: 0,
                     users: {
                         _id: 1,
-                        name: 1
-                    }
-                }
-            }
+                        name: 1,
+                    },
+                },
+            },
         ]);
 
         if (!result) {
-            return res.status(404).json({ message: "Users not found!"});
+            return res.status(404).json({ message: "Users not found!" });
         }
 
         return res.status(200).json(result[0].users);
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: "Internal server error!"});
+        return res.status(500).json({ message: "Internal server error!" });
     }
 };
 
@@ -148,9 +154,10 @@ export const getWorkspaceByUid = async (req, res) => {
     const { uid } = req.body;
     let result;
     try {
-        result = await WorkspaceMember.find({ user: uid }, '-user -__v -_id').populate(
-            "workspace", '-__v'
-        );
+        result = await WorkspaceMember.find(
+            { user: uid },
+            "-user -__v -_id"
+        ).populate("workspace", "-__v");
 
         if (!result) {
             return res.status(404).json({ message: "Workspace is not found!" });
@@ -189,53 +196,57 @@ export const getTaskByWorkspaceId = async (req, res) => {
         tasks = await TaskMember.aggregate([
             {
                 $lookup: {
-                    from: 'tasks', // Tên bảng cần join
-                    localField: 'task',
-                    foreignField: '_id',
-                    as: 'taskDetails',
-                }
+                    from: "tasks", // Tên bảng cần join
+                    localField: "task",
+                    foreignField: "_id",
+                    as: "taskDetails",
+                },
             },
             {
-                $unwind: '$taskDetails', // Giải nén mảng taskDetails
+                $unwind: "$taskDetails", // Giải nén mảng taskDetails
             },
             {
                 $match: {
-                    'taskDetails.workspace': new mongoose.Types.ObjectId(wid),
+                    "taskDetails.workspace": new mongoose.Types.ObjectId(wid),
                 },
             },
             {
                 $lookup: {
-                    from: 'users',
-                    localField: 'users',
-                    foreignField: '_id',
-                    as: 'userDetails',
-                }
+                    from: "users",
+                    localField: "users",
+                    foreignField: "_id",
+                    as: "userDetails",
+                },
             },
             {
                 $group: {
-                    _id: '$task',
-                    taskDetails: { $first: '$taskDetails'},
-                    users: { $first: '$userDetails'},
+                    _id: "$task",
+                    id: { $first: "$taskDetails._id" },
+                    name: { $first: "$taskDetails.name" },
+                    deadline: { $first: "$taskDetails.deadline" },
+                    starting_time: { $first: "$taskDetails.starting_time" },
+                    status: { $first: "$taskDetails.status" },
+                    priority: { $first: "$taskDetails.priority" },
+                    description: { $first: "$taskDetails.description" },
+                    assignee: { $first: "$userDetails" },
                 },
             },
             {
                 $project: {
                     _id: 0,
-                    taskDetails: {
+                    id: 1,
+                    name: 1,
+                    deadline: 1,
+                    starting_time: 1,
+                    status: 1,
+                    priority: 1,
+                    description: 1,
+                    assignee: {
                         _id: 1,
-                        deadline: 1,
-                        starting_time: 1,
                         name: 1,
-                        status: 1,
-                        priority: 1,
-                        description: 1,
                     },
-                    users: {
-                        _id: 1,
-                        name: 1,
-                    }
-                }
-            }
+                },
+            },
         ]);
 
         if (!tasks) {
@@ -291,7 +302,9 @@ export const createTaskInWorkspace = async (req, res) => {
 
             const task = await Task.findOne({ name: saveTask.name });
 
-            let userIds = taskData.users.map(uid => new mongoose.Types.ObjectId(uid));
+            let userIds = taskData.users.map(
+                (uid) => new mongoose.Types.ObjectId(uid)
+            );
             const task_member = new TaskMember({
                 task: task._id,
                 users: userIds,
@@ -343,7 +356,10 @@ export const getWorkspaceByName = async (req, res) => {
     const { name } = req.body;
     let workspace;
     try {
-        workspace = await Workspace.findOne({ name: {$regex: new RegExp(name, 'i')}}, '-__v');
+        workspace = await Workspace.findOne(
+            { name: { $regex: new RegExp(name, "i") } },
+            "-__v"
+        );
     } catch (err) {
         return console.log(err);
     }

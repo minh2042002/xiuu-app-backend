@@ -3,7 +3,7 @@ import { getAllUserInWorkspace, createWorkspace, getWorkspaceByName, addUserToWo
 
 const workspaceRouter = express.Router();
 
-workspaceRouter.post("/create", createWorkspace);
+workspaceRouter.post("/create", createWorkspace); // http://localhost:5000/xiuu/api/v1/workspace/create
 workspaceRouter.get("/", getWorkspaceByName)
 workspaceRouter.get("/user_id", getWorkspaceByUid);
 workspaceRouter.get("/users", getAllUserInWorkspace);
