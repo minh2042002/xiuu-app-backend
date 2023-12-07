@@ -127,17 +127,11 @@ export const refreshToken = async (req, res) => {
         return res.status(401).json({ message: "You're not authenticated!" });
     }
 
-    const existUser = await User.findOne({ refreshTokenFromClient });
+    const existUser = await User.findOne({ refreshToken: refreshTokenFromClient });
     if (!existUser) {
-        return res.status(403).json({ message: "Invalid refresh token!" });
+        return res.status(403).json({ message: "Not found refresh token for user!" });
     }
 
-    jwt.verify(refreshTokenFromClient, refreshTokenSecret, (err, user) => {
-        if (err) {
-            console.log(err);
-        }
-
-        const newAccessToken = generateAccessToken(user);
-        return res.status(200).json({ accessToken: newAccessToken });
-    });
+    const newAccessToken = await generateAccessToken(existUser);
+        return res.status(200).json({ newAccessToken });
 };
