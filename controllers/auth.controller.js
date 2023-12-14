@@ -68,6 +68,7 @@ export const login = async (req, res) => {
     try {
         user = await User.findOne({ email });
 
+        console.log(user);
         if (!user) {
             return res
                 .status(401)

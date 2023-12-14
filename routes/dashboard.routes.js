@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticate } from '../middleware/authMiddleware.js';
-import { countTaskByStatusWithUserLogin, getTaskByDateTimeWithUserLogin  } from '../controllers/dashboardController.js';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { countTaskByStatusWithUserLogin, getTaskByDateTimeWithUserLogin  } from '../controllers/dashboard.controller.js';
 const dashboardRouter = express.Router();
 
 dashboardRouter.use(authenticate);
