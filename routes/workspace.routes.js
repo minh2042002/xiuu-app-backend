@@ -1,7 +1,10 @@
 import express from 'express';
 import { getAllUserInWorkspace, createWorkspace, getWorkspaceByName, addUserToWorkspace, createTaskInWorkspace , getWorkspaceByUid, getDocumentByWorkspaceId, getTaskByWorkspaceId, getTaskByWorkspaceIdAndStatus } from '../controllers/workspace.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const workspaceRouter = express.Router();
+
+workspaceRouter.use(authenticate);
 
 workspaceRouter.post("/create", createWorkspace); // http://localhost:5000/xiuu/api/v1/workspace/create
 workspaceRouter.get("/", getWorkspaceByName)

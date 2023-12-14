@@ -7,7 +7,6 @@ const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 
 export const authenticate = (req, res, next) => {
     const accessToken = req.headers["access-token"];
-
     if (accessToken) {
         jwt.verify(accessToken, accessTokenSecret, (err, user) => {
             if (err) {
@@ -26,7 +25,6 @@ export const authenticate = (req, res, next) => {
 
 export const refreshTokenMiddleware = (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
-    
     if (refreshToken) {
         jwt.verify(refreshToken, refreshTokenSecret, (err, user) => {
             if (err) {

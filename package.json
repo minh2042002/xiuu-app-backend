@@ -5,7 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start-server": "pm2 start server.js --name xiuu-server && pm2 startup",
+    "restart-server": "pm2 stop xiuu-server && pm2 restart xiuu-server",
     "dev": "nodemon --experimental-modules --es-module-specifier-resolution=node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.2.0",
     "mongoose": "^8.0.1",
-    "nodemon": "^3.0.1"
+    "morgan": "^1.10.0",
+    "nodemon": "^3.0.1",
+    "winston": "^3.11.0"
   }
 }
