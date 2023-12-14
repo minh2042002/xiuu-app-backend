@@ -62,13 +62,9 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
     const { email, pwd } = req.body;
-
     let user;
-
     try {
         user = await User.findOne({ email });
-
-        console.log(user);
         if (!user) {
             return res
                 .status(401)
@@ -107,7 +103,6 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     res.clearCookie("refreshToken");
-
     await User.findByIdAndUpdate(req.user.id, { $set: { refreshToken: "" } })
         .then((user) => {
             if (!user) {
