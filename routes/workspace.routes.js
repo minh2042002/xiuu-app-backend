@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllUserInWorkspace, createWorkspace, getWorkspaceByName, addUserToWorkspace, createTaskInWorkspace , getWorkspaceByUid, getDocumentByWorkspaceId, getTaskByWorkspaceId, getTaskByWorkspaceIdAndStatus } from '../controllers/workspaceController.js';
+import { getAllUserInWorkspace, createWorkspace, getWorkspaceByName, addUserToWorkspace, createTaskInWorkspace , getWorkspaceByUid, getDocumentByWorkspaceId, getTaskByWorkspaceId, getTaskByWorkspaceIdAndStatus } from '../controllers/workspace.controller.js';
 
 const workspaceRouter = express.Router();
 
