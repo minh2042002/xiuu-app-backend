@@ -5,8 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start-server": "pm2 start server.js --name xiuu-server && pm2 startup",
-    "restart-server": "pm2 stop xiuu-server && pm2 restart xiuu-server",
+    "start-server": "pm2 start server.js --name xiuu-server && pm2 startup && pm2 save",
+    "restart-server": "pm2 restart xiuu-server && pm2 save",
     "dev": "nodemon --experimental-modules --es-module-specifier-resolution=node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
